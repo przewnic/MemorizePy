@@ -11,3 +11,4 @@ class Flashcard(Base):
     id = Column(Integer, primary_key=True)
     question = Column(String)
     answer = Column(String)
+    box_number = Column(Integer, default=1)
