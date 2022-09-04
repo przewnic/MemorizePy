@@ -36,17 +36,79 @@ def add_flashcard(session):
 
 def practice(session):
     rows = session.query(Flashcard).all()
+    if not rows:
+        print("There is no flashcard to practice!")
+        return
+
     for row in rows:
         print(f"Question: {row.question}")
-        print('Please press "y" to see the answer or press "n" to skip:')
+        print(
+            'press "y" to see the answer:',
+            'press "n" to skip:',
+            'press "u" to update:',
+            sep="\n"
+        )
         pressed = input()
         if pressed == "n":
             continue
         elif pressed == "y":
             print(f"Answer: {row.answer}")
-            print()
+            update_leitner(row, session)
+        elif pressed == "u":
+            update_flashcard(row, session)
         else:
             print(f"{pressed} is not an option")
+    session.commit()
+
+
+def update_leitner(row, session):
+    print(
+        'press "y" if your answer is correct:',
+        'press "n" if your answer is wrong:',
+        sep="\n"
+    )
+    pressed = input()
+    if pressed == "y":
+        if row.box_number == 3:
+            delete_flashcard(row, session)
+        else:
+            row.box_number = row.box_number + 1 if row.box_number < 3 else 3
+    elif pressed == "n":
+        row.box_number = row.box_number - 1 if row.box_number > 1 else 1
+    else:
+        print(f"{pressed} is not an option")
+
+
+def update_flashcard(row, session):
+    """ User advances to update menu from practice """
+    print(
+        'press "d" to delete the flashcard:',
+        'press "e" to edit the flashcard:',
+        sep="\n"
+    )
+    pressed = input()
+    print()
+    if pressed == "d":
+        delete_flashcard(row, session)
+    elif pressed == "e":
+        edit_flashcard(row)
+    else:
+        print(f"{pressed} is not an option")
+
+
+def edit_flashcard(row):
+    print(f"current question: {row.question}")
+    print("please write a new question:")
+    new_q = input()
+    print(f"current answer: {row.answer}")
+    print("please write a new answer:")
+    new_a = input()
+    row.question = new_q
+    row.answer = new_a
+
+
+def delete_flashcard(row, session):
+    session.delete(row)
 
 
 def create_db(engine):
